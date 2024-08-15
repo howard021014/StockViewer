@@ -59,15 +59,18 @@ class StockViewModel {
             switch result {
             case .success(let stocks):
                 self.isFirstLoad = false
-                self.state = .success(tranform(stocks: stocks))
+                self.state = .success(transform(stocks: stocks))
             case .failure(let error):
-                self.state = .failure(error.localizedDescription)
+                if (error as NSError).code == NSURLErrorTimedOut {
+                    self.state = .failure("The request timed out due to internet issues.")
+                } else {
+                    self.state = .failure(error.localizedDescription)
+                }
             }
-            
         }
     }
     
-    private func tranform(stocks: Stocks) -> [Stock] {
+    private func transform(stocks: Stocks) -> [Stock] {
         return stocks.map { Stock($0.key, $0.value) }.sorted { $0.symbol < $1.symbol }
     }
     

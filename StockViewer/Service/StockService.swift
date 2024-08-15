@@ -14,29 +14,22 @@ protocol StockService {
 }
 
 class StockServiceImpl: StockService {
-    let urlString = "https://6twxtqzjyoyruhqzywfrcdxoci0sltgk.lambda-url.us-east-1.on.aws/"
-    var dataTask: URLSessionDataTask?
-      
-    func createSession() -> URLSession {
+    private let urlString = "https://6twxtqzjyoyruhqzywfrcdxoci0sltgk.lambda-url.us-east-1.on.aws/"
+    private var session: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForResource = 5
         return URLSession(configuration: configuration)
-    }
+    }()
     
+    var dataTask: URLSessionDataTask?
+
     func fetchStocks(completion: @escaping StockCompletion) {
         guard let url = URL(string: urlString) else {
             return
         }
-        
-        let session = createSession()
-        dataTask?.cancel()
-        
-        dataTask = session.dataTask(with: url) { [weak self] data, response, error in
-            defer { self?.dataTask = nil }
+
+        dataTask = session.dataTask(with: url) { data, response, error in
             if let error = error {
-                if (error as NSError).code == NSURLErrorCancelled {
-                    return
-                }
                 completion(.failure(error))
                 return
             }

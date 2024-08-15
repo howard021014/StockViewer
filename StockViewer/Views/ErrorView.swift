@@ -12,7 +12,7 @@ class ErrorView: UIView {
     let errorLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Failed to load data, will retry in 10 seconds"
+        label.text = "Failed to load data, will retry again soon."
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
