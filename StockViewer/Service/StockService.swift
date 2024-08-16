@@ -17,18 +17,26 @@ class StockServiceImpl: StockService {
     private let urlString = "https://6twxtqzjyoyruhqzywfrcdxoci0sltgk.lambda-url.us-east-1.on.aws/"
     private var session: URLSession = {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForResource = 5
+        configuration.timeoutIntervalForResource = 15
+        configuration.waitsForConnectivity = true
         return URLSession(configuration: configuration)
     }()
-    
-    var dataTask: URLSessionDataTask?
+
+    private var isRequestInProgress = false
 
     func fetchStocks(completion: @escaping StockCompletion) {
         guard let url = URL(string: urlString) else {
             return
         }
+        
+        guard !isRequestInProgress else {
+            return
+        }
 
-        dataTask = session.dataTask(with: url) { data, response, error in
+        isRequestInProgress = true
+
+        let dataTask = session.dataTask(with: url) { [weak self] data, response, error in
+            defer { self?.isRequestInProgress = false }
             if let error = error {
                 completion(.failure(error))
                 return
@@ -46,7 +54,8 @@ class StockServiceImpl: StockService {
                 completion(.failure(error))
             }
         }
-        dataTask?.resume()
+
+        dataTask.resume()
     }
 }
 
